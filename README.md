@@ -6,7 +6,7 @@ The data is stored inside embedded block RAM.
 
 ## FPGA Model
 
-Digilent Zora z7s Zynq development board
+Zunq-7000 &s CLG400 FPGA on a Digilent Zora z7s Zynq development board.
 
 ## Timing 
 
@@ -23,6 +23,21 @@ Failing to properly meet timing requirements will result in flip-flops possibly 
 The FPGA will then not operate in the intended way.
 A situtation where a metastable state is possible can be fixed by cascading the data through 2 consequent flip-flops.
 
+## Defining Constraints
+
+To map inputs and outputs in the code to physical pins on the board, one must use a constraints file (*.xdc* extension).
+
+First one defines the clock. The following example maps the physical pin (pin *H16*, can be found in the board schematics)
+to a VHDL variable *i_clock*, then defines a system clock with a given period (in ns) and rise and fall times of the square signal (here at 0 and 5 ns, respectively):
+
+```VHDL
+set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { i_clock }];
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { i_clock }];
+```
+Now the variable *i_clock* can be used inside the VHDL code. Similar code (first line, but with a different pin and variable name).
+
+The constaints master file for most commmon boards can be found at [the Digilent GitHub](https://github.com/Digilent/digilent-xdc).
+All pins are already mapped there, just uncomment the required ones.
 
 ## VHDL Syntax Fundamentals 
 
@@ -73,7 +88,19 @@ The VHDL code will be translated into some logical elements with the help of a *
 
 ## Simulating The Design
 
-To simulate a design, test inputs are provided via a test bench.
+To simulate a design, test inputs are provided via a **testbench** - code that checks which outputs are triggered for given inputs.
+For a testbench, there are no input or output signals to be defined since all signals are generated internally.
+
+## Synthesis And Implementation
+
+Initially, **synthesis** converts the VHDL/Verilog code into a series of abstract flip-flops and logic gates.
+These elements are then mapped to physical components inside the FPGA durind the **implementation** phase. 
+Finally, the **bistream** process generates a *.bit* file that can be uploaded to the FPGA.
+
+## Programming The Device
+
+The generated bitsream can be uploaded to the FPGA board using a hardware manager. IDEs may already include that. Choose the *.bit* file 
+and upload it to the board.
 
 ## Sources
 
