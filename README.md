@@ -28,9 +28,9 @@ A situtation where a metastable state is possible can be fixed by cascading the 
 To map inputs and outputs in the code to physical pins on the board, one must use a constraints file (*.xdc* extension).
 
 First one defines the clock. The following example maps the physical pin (pin *H16*, can be found in the board schematics)
-to a VHDL variable *i_clock*, then defines a system clock with a given period (in ns) and rise and fall times of the square signal (here at 0 and 5 ns, respectively):
+to a Verilog variable *i_clock*, then defines a system clock with a given period (in ns) and rise and fall times of the square signal (here at 0 and 5 ns, respectively):
 
-```VHDL
+```
 set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { i_clock }];
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { i_clock }];
 ```
@@ -39,49 +39,47 @@ Now the variable *i_clock* can be used inside the VHDL code. Similar code (first
 The constaints master file for most commmon boards can be found at [the Digilent GitHub](https://github.com/Digilent/digilent-xdc).
 All pins are already mapped there, just uncomment the required ones.
 
-## VHDL Syntax Fundamentals 
+## Verilog Syntax Fundamentals 
 
-The code below can be found as an elcosed project in the ```and_gate/``` folder.
+A fundamental unit of code is a *wire* (no initial value) or a *register* (with an inital value).
 
-Initially, one must use libraries to define the behaviour of keywords:
+All input and output signals are defined inside an **module** block:
 
-```VHDL
-library ieee;
-use ieee.std_logic_1164.all;
+```Verilog
+module example_and_gate
+    (
+        input_1,
+        input_2,
+        and_result);
+    
+    input input_1;
+    input input_2;
+    output and_result;
+
+    wire and_temp;
+    assign and_temp = input1 & input2; // perform AND operation on the inputs
+    assign and_result = and_temp;
+endmodule;
 ```
-All input and output signals are defined inside an **entity** block:
-
-```VHDL
-entity example_and_gate is
-    port (
-        input_1: in std_logic;
-        input_2: in std_logic;
-        and_result: out std_logic
-    );
-end example_end_gate;
-```
-
- The functionality of an entity is described in an **architecture**:
-
-```VHDL
-architecture arch_and_gate of example_and_gate is
-    signal and_gate: std_logic;
-begin
-    and_gate <= input_1 and input_2;
-    and_result <= and_gate;
-end arch_end_gate;
-```
-
-A **signal** is a fundamental unit of VHDL.
-
 A process can be declared as follows:
 
-```VHDL
-process (input_1, input_2) -- this sensitivity list defines which signals will cause the block to execute
+```Verilog
+always @ (input_1 or input_2) // this sensitivity list defines which signals will cause the block to execute
 begin
-    and_gate <= input_1 and input_2;
-end process;
+    and_gate = input_1 & input_2;
+end
 ```
+
+The rising edge of the system clock can be monitored with:
+```Verilog
+always @ (posedge i_clock)
+begin
+...
+end
+```
+Wires should **not** appear on the left hand side of an assignment operator inside inside a clock-triggered *always block*.
+
+Constant values should be prefixed with *c_*.
 
 The VHDL code will be translated into some logical elements with the help of a *synthesis tool*.
 
