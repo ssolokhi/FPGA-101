@@ -11,3 +11,5 @@ and one output signal:
 o_toggle_LED
 ```
 
+The button signal is first passed through a [*debouncing*](https://www.picotech.com/library/articles/blog/what-is-switch-bounce-how-to-implement-debounce)
+ module until a stable signal is received.

@@ -61,6 +61,8 @@ module example_and_gate
     assign and_result = and_temp;
 endmodule;
 ```
+Available bit-wise operations include *NOT* (*~*), *AND* (*&*), *OR* (*|*), *XOR* (*^*).
+
 A process can be declared as follows:
 
 ```Verilog
@@ -102,4 +104,5 @@ and upload it to the board.
 
 ## Sources
 
-Have a look at [NANDland](https://nandland.com/)
+Have a look at [NANDland](https://nandland.com/) and the [brilliant book](https://nostarch.com/gettingstartedwithfpgas) by Russel Merrick, both list the syntax basics for Verilog and VHDL and a number of useful examples.
+The book is accompanied by a dedicated [GitHub repository](https://github.com/nandland/getting-started-with-fpgas).
