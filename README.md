@@ -15,13 +15,51 @@ E.g., propagation of a signal between two consequent flip-flops cannot be longer
 Adding more logic between two elements results in a longer signal propagation delay, 
 so the logic should be broken up into smaller stages - **pipelines**.
 
-The minimal clock cycle period (equivalently, the maximum clock frequency) is defined by the summ of the setup time,
- hold time, and the propagation delay. The former two are fixed by the design of the flip-flops,
-nly the latter can be controlled.
+The minimal clock cycle period (equivalently, the maximum clock frequency) is defined by the summ of several components:
+
+1. *setup time*: for how long the flip-flop's input must be stable **before** the rising edge of the clock in order to be registered correctly;
+
+2. *hold time*: for how long the flip-flop's input must be stable **after** the rising edge of the clock in order to be registered correctly;
+
+3. *propagation delay*: how long it takes the signal to move from the source to the destination. 
+
+The former two are fixed by the design of the flip-flops, only the latter can be controlled. Adding more logic between two elements results in a 
+longer signal propagation delay, so the logic should be broken up into smaller stages - **pipelines**.
+
+Another option is slowing down the clock to allow more time between clock cycles for the signal to propagate.
+
 
 Failing to properly meet timing requirements will result in flip-flops possibly entering a *metastable* state.
 The FPGA will then not operate in the intended way.
 A situtation where a metastable state is possible can be fixed by cascading the data through 2 consequent flip-flops.
+
+### Crossing Clock Domains
+
+It is possible to use several clocks inside a single FPGA design. Even if they have the same frequency, there is no way to ensure that 
+the clocks are synchronous since they might have started at different moments in time, let alone when different clocks have different frequencies.
+
+Such a situation is refered to as *crossing clock domains*. 
+
+> [!WARNING]
+> Crossing clock domains may produce flip-flops in a metastable state, therefore one must ensure a safe domain crossing!
+
+Going from a slower to a faster clock requires passing the data through two chained flip-flops when data is transmitted
+to the faster clock: even if the first flip-slop enters a metastable state, the second one will almost certainly have a steady
+output:
+
+```Verilog
+always @(posedge i_faster_clock)
+begin
+    r_buffer_data <= i_slow_data;
+    o_fast_data <= r_buffer_data;
+end
+```
+Going from a faster clock to a slower one poses more challenges since the faster data may change quicker than the slow clock will 
+"sample" it, resulting in data loss. One possible approach is to stretch the waveform in the faster domain in such a way that the slower
+clock will be sure to capture it. 
+
+> [!TIP]
+> Stretch the fast data to at least two slow clock cycles. In that way the data is certainly stable by the end of the second clock cycle.
 
 ## Defining Constraints
 
@@ -34,7 +72,7 @@ to a Verilog variable *i_clock*, then defines a system clock with a given period
 set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { i_clock }];
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { i_clock }];
 ```
-Now the variable *i_clock* can be used inside the VHDL code. Similar code (first line, but with a different pin and variable name).
+Now the variable *i_clock* can be used inside the code. Similar code (first line, but with a different pin and variable name).
 
 The constaints master file for most commmon boards can be found at [the Digilent GitHub](https://github.com/Digilent/digilent-xdc).
 All pins are already mapped there, just uncomment the required ones.
@@ -85,7 +123,6 @@ Constant values should be prefixed with *c_*.
 
 The VHDL code will be translated into some logical elements with the help of a *synthesis tool*.
 
-
 ## Simulating The Design
 
 To simulate a design, test inputs are provided via a **testbench** - code that checks which outputs are triggered for given inputs.
@@ -93,8 +130,18 @@ For a testbench, there are no input or output signals to be defined since all si
 
 ## Synthesis And Implementation
 
-Initially, **synthesis** converts the VHDL/Verilog code into a series of abstract flip-flops and logic gates.
-These elements are then mapped to physical components inside the FPGA durind the **implementation** phase. 
+Initially, **synthesis** converts the VHDL/Verilog code into a series of primitive components: flip-flops and logic gates.
+To make best use of the FPGA's limited resources, the synthesis tools will perform *logic optimization*.
+Trying to synthesize a design that uses more resources than the FPGA has at its disposal will yield a **utilization error**.
+
+> [!TIP]
+> Use no more than 80% of the avaiable resources to make the subsequent stages easier.
+
+These elements are then mapped to physical components inside the FPGA during the **implementation**, or **place-and-route**, phase. 
+In the implementation phase, the tools will test the synthesized design under all forseen (including worst-case scenario) operating conditions.
+If the design will work correctly in all such scenarios given the defined clock frequency, the design is said to meet the timing requirements.
+
+
 Finally, the **bistream** process generates a *.bit* file that can be uploaded to the FPGA.
 
 ## Programming The Device
