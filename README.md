@@ -64,12 +64,13 @@ end example_end_gate;
  The functionality of an entity is described in an **architecture**:
 
 ```VHDL
-architecture arch_and_gate of example_and_gate is
+-- RTL refers to Register-Transfer Level: describing combinational logic with if-else statements, registers, etc.
+architecture and_gate_RTL of example_and_gate is
     signal and_gate: std_logic;
 begin
     and_gate <= input_1 and input_2;
     and_result <= and_gate;
-end arch_end_gate;
+end and_gate_RTL;
 ```
 
 A **signal** is a fundamental unit of VHDL.
@@ -90,6 +91,21 @@ The VHDL code will be translated into some logical elements with the help of a *
 
 To simulate a design, test inputs are provided via a **testbench** - code that checks which outputs are triggered for given inputs.
 For a testbench, there are no input or output signals to be defined since all signals are generated internally.
+
+For VHDL, an open-source simulation tool is available: [GHDL](https://ghdl.github.io/ghdl/getting.html).
+
+```bash
+ghdl -a --std=08 module.vhd module_tb.vhd # analyse design and testbench
+ghdl -e --std=08 module_tb # elaborate the design. NB: here one must use the name of the module, not the file!
+ghdl -r --std=08 module_tb --wave=module_wave.ghw # run 
+
+```
+
+Waveforms can then be analysed using [GTKWave](https://gtkwave.sourceforge.net/?utm_source=chatgpt.com), another open-source tool:
+
+```bash
+gtkwave module_wave.ghw
+```
 
 ## Synthesis And Implementation
 
