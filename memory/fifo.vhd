@@ -5,7 +5,7 @@ use ieee.numeric_std.all;
 entity FIFO is
     generic (
         c_WIDTH: integer := 16;
-        c_DEPTH: integer := 256
+        c_DEPTH: integer := 256;
         c_ALMOST_FULL_LEVEL: integer := 2;
         c_ALMOST_EMPTY_LEVEL: integer := 2
     );
@@ -30,10 +30,9 @@ architecture FIFO_RTL of FIFO is
     -- create custom 2D data type
     type t_FIFO is array (0 to c_DEPTH-1) of std_logic_vector(c_WIDTH-1 downto 0);
     signal r_FIFO: t_FIFO;
-    signal r_write_address: std_logic_vector;
-    signal r_read_address: std_logic_vector;
-    signal w_read_data: std_logic_vector;
-    signal r_element_count: integer;
+    signal r_write_address: natural range 0 to c_DEPTH - 1;
+    signal r_read_address: natural range 0 to c_DEPTH - 1;
+    signal r_element_count: natural;
 begin
     process (i_write_clock)
     begin 
@@ -42,7 +41,7 @@ begin
                 if (r_write_address = c_DEPTH - 1) then
                     r_write_address <= 0; -- to prevent overflow
                 else
-                    r_FIFO(to_integer(unsigned(r_write_address))) <= i_write_data;
+                    r_FIFO(r_write_address) <= i_write_data;
                     r_write_address <= r_write_address + 1;
                 end if;
             end if;
@@ -57,7 +56,6 @@ begin
     begin 
         if rising_edge(i_read_clock) then 
             if (i_read_enable) then
-                o_read_data <= w_read_data;
                 if (r_read_address = c_DEPTH - 1) then
                     r_read_address <= 0; -- to prevent overflow
                 else
@@ -71,7 +69,7 @@ begin
             end if;
         end if;
     end process;
-    w_read_data <= r_FIFO(to_integer(unsigned(r_read_address)));
+    o_read_data <= r_FIFO(r_read_address);
     o_is_full <= '1' when ((r_element_count = c_DEPTH) or (r_element_count = c_DEPTH - 1 and i_write_enable = '1' and i_read_enable = '0')) else '0'; 
     o_is_almost_full <= '1' when (r_element_count > c_DEPTH - c_ALMOST_FULL_LEVEL) else '0';
     o_is_empty <= '1' when (r_element_count = 0) else '0'; 
