@@ -8,7 +8,7 @@ module dual_port_RAM #(parameter c_WIDTH = 16, c_DEPTH = 32) (
     input i_read_enable,
     output reg [c_WIDTH-1:0] o_read_data,
     output reg o_read_ready
-    )
+    );
 
     reg [c_WIDTH-1:0] r_RAM [c_DEPTH-1:0]; // define a RAM block of size c_WIDTH x c_DEPTH
     // the $clog2() is not used for c_DEPTH because it's the physical memory depth, 
