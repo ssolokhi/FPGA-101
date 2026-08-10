@@ -95,7 +95,7 @@ module example_and_gate
     output and_result;
 
     wire and_temp;
-    assign and_temp = input1 & input2; // perform AND operation on the inputs
+    assign and_temp = input_1 & input_2; // perform AND operation on the inputs
     assign and_result = and_temp;
 endmodule;
 ```
@@ -121,7 +121,7 @@ Wires should **not** appear on the left hand side of an assignment operator insi
 
 Constant values should be prefixed with *c_*.
 
-The VHDL code will be translated into some logical elements with the help of a *synthesis tool*.
+The Verilog code will be translated into some logical elements with the help of a *synthesis tool*.
 
 ## Simulating The Design
 
