@@ -97,7 +97,7 @@ module example_and_gate
     wire and_temp;
     assign and_temp = input_1 & input_2; // perform AND operation on the inputs
     assign and_result = and_temp;
-endmodule;
+endmodule
 ```
 Available bit-wise operations include *NOT* (*~*), *AND* (*&*), *OR* (*|*), *XOR* (*^*).
 
