@@ -68,37 +68,32 @@ To map inputs and outputs in the code to physical pins on the board, one must us
 First one defines the clock. The following example maps the physical pin (pin *H16*, can be found in the board schematics)
 to a Verilog variable *i_clock*, then defines a system clock with a given period (in ns) and rise and fall times of the square signal (here at 0 and 5 ns, respectively):
 
-```
+```txt
 set_property -dict { PACKAGE_PIN H16   IOSTANDARD LVCMOS33 } [get_ports { i_clock }];
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports { i_clock }];
 ```
+
 Now the variable *i_clock* can be used inside the code. Similar code (first line, but with a different pin and variable name).
 
 The constaints master file for most commmon boards can be found at [the Digilent GitHub](https://github.com/Digilent/digilent-xdc).
 All pins are already mapped there, just uncomment the required ones.
 
-## Verilog Syntax Fundamentals 
+## SystemVerilog Syntax Fundamentals 
 
-A fundamental unit of code is a *wire* (no initial value) or a *register* (with an inital value).
+A fundamental unit of code is *logic*, which replaces both a *wire* (no initial value) or a *register* (with an inital value) in Verilog.
 
-All input and output signals are defined inside an **module** block:
+All input and output signals are defined inside an **module** block (see **and_gate** example):
 
 ```Verilog
-module example_and_gate
-    (
-        input_1,
-        input_2,
-        and_result);
+module and_gate
+    (input logic input_1,
+     input logic input_2,
+     output logic and_result);
     
-    input input_1;
-    input input_2;
-    output and_result;
-
-    wire and_temp;
-    assign and_temp = input_1 & input_2; // perform AND operation on the inputs
-    assign and_result = and_temp;
+    assign and_result = input_1 & input_2;
 endmodule
 ```
+
 Available bit-wise operations include *NOT* (*~*), *AND* (*&*), *OR* (*|*), *XOR* (*^*).
 
 A process can be declared as follows:
@@ -110,23 +105,29 @@ begin
 end
 ```
 
-The rising edge of the system clock can be monitored with:
+The rising/falling edge of the system clock can be monitored with:
+
 ```Verilog
-always @ (posedge i_clock)
+always @ (posedge i_clock) // or negedge
 begin
 ...
+    and_gate <= input_1 & input_2;
 end
 ```
-Wires should **not** appear on the left hand side of an assignment operator inside inside a clock-triggered *always block*.
+
+> [!NOTE]
+> Combinational assignments should use = (blocking - executed immediately), while sequential assignments should use <= (non-blocking - executed at next cycle)
 
 Constant values should be prefixed with *c_*.
 
-The Verilog code will be translated into some logical elements with the help of a *synthesis tool*.
+The SystemVerilog code will be translated into some logical elements with the help of a *synthesis tool*.
 
 ## Simulating The Design
 
 To simulate a design, test inputs are provided via a **testbench** - code that checks which outputs are triggered for given inputs.
 For a testbench, there are no input or output signals to be defined since all signals are generated internally.
+
+Simulating a design is quite involved and is more difficult than the design itself, but SystemVerilog is equipped with many tools for it. A lot of useful information can he found [on the ChipVerify website](https://chipverify.com/systemverilog/systemverilog-assertions).
 
 ## Synthesis And Implementation
 
