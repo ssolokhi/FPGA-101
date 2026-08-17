@@ -125,9 +125,26 @@ The SystemVerilog code will be translated into some logical elements with the he
 ## Simulating The Design
 
 To simulate a design, test inputs are provided via a **testbench** - code that checks which outputs are triggered for given inputs.
-For a testbench, there are no input or output signals to be defined since all signals are generated internally.
+For a testbench, there are no input or output signals to be defined since all signals are generated internally. 
+Simulated signals are displayes as green *waveforms*:
+
+![simulation](and_gate/simulation.png)
 
 Simulating a design is quite involved and is more difficult than the design itself, but SystemVerilog is equipped with many tools for it. A lot of useful information can he found [on the ChipVerify website](https://chipverify.com/systemverilog/systemverilog-assertions).
+
+## Linter
+
+In the linting stage, the code will is translated to logical schematics. The design suite will check that all design rules are obeyed.
+
+The schematics will contain a list of:
+
+- *cells* (elements performing functions);
+- *I/O Ports*;
+- *nets* (lines connecting cells and ports).
+
+![schematics](and_gate/schematics.png)
+
+This allows checking that the design suite understood correctly what the intention of the program was.
 
 ## Synthesis And Implementation
 
@@ -135,10 +152,18 @@ Initially, **synthesis** converts the VHDL/Verilog code into a series of primiti
 To make best use of the FPGA's limited resources, the synthesis tools will perform *logic optimization*.
 Trying to synthesize a design that uses more resources than the FPGA has at its disposal will yield a **utilization error**.
 
+At this stage, the device floorplan view becomes available. It show the device's features, e.g. division into clock regions (here 4 of them: X\*Y\*):
+
+![synthesis](and_gate/synthesis.png)
+
 > [!TIP]
 > Use no more than 80% of the avaiable resources to make the subsequent stages easier.
 
-These elements are then mapped to physical components inside the FPGA during the **implementation**, or **place-and-route**, phase. 
+These elements are then mapped to physical components inside the FPGA during the **implementation**, or **place-and-route**, phase. Now the device's 
+floorplan shows what components were used and where theywere placed:
+
+![implementation](and_gate/implementation.png)
+
 In the implementation phase, the tools will test the synthesized design under all forseen (including worst-case scenario) operating conditions.
 If the design will work correctly in all such scenarios given the defined clock frequency, the design is said to meet the timing requirements.
 
